@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'data/repositories/printer_repository_impl.dart';
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'SellPOS - Configuración de Impresora',
+        title: 'SellPOS - ConfiguraciÃ³n de Impresora',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
@@ -48,10 +48,3 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: true,
           fontFamily: 'Segoe UI',
-        ),
-        themeMode: ThemeMode.system,
-        home: const PrinterConfigPage(),
-      ),
-    );
-  }
-}
