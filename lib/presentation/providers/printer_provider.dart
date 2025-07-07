@@ -191,6 +191,32 @@ class PrinterProvider extends ChangeNotifier {
     }
   }
 
+  /// Imprime un ticket de configuración
+  Future<void> printConfigurationTicket() async {
+    if (_selectedPrinter == null) {
+      _setError('No hay una impresora seleccionada');
+      return;
+    }
+
+    if (!_selectedPrinter!.isConnected) {
+      _setError('La impresora no está conectada');
+      return;
+    }
+
+    try {
+      _isPrinting = true;
+      _clearError();
+      notifyListeners();
+
+      await _printerUseCase.printConfigurationTicket(_selectedPrinter!);
+    } catch (e) {
+      _setError('Error al imprimir ticket de configuración: $e');
+    } finally {
+      _isPrinting = false;
+      notifyListeners();
+    }
+  }
+
   /// Obtiene información detallada del estado de búsqueda
   String getScanStatusMessage() {
     if (_isScanning) {

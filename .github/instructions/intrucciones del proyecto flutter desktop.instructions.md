@@ -11,7 +11,7 @@ applyTo: '**'
 - Organiza el código en capas: domain, data, presentation, core
 
 ## Diseño y UX
-- Implementa Material 3 como guía de diseño y buenas prácticas de UX
+- Implementa la Guia de diseño de Material Desing 3 como guía de diseño y buenas prácticas de UI y UX
 - Asegura compatibilidad con el cambio dinámico de brillo (tema claro/oscuro)
 - Prioriza la responsividad y accesibilidad en todos los componentes
 

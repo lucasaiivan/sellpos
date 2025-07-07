@@ -38,30 +38,133 @@ class _MainPageState extends State<MainPage> {
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Botón de refresh
-                IconButton(
-                  onPressed: provider.isScanning 
-                      ? null 
-                      : () => provider.scanForPrinters(),
-                  icon: provider.isScanning
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
+                // Botón de refresh con mejores estados visuales y animación
+                AnimatedRotation(
+                  turns: provider.isScanning ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 800),
+                  child: IconButton(
+                    onPressed: provider.isScanning 
+                        ? null 
+                        : () => provider.scanForPrinters(),
+                    icon: provider.isScanning
+                        ? AnimatedBuilder(
+                            animation: AlwaysStoppedAnimation(0),
+                            builder: (context, child) {
+                              return TweenAnimationBuilder<double>(
+                                tween: Tween(begin: 0.0, end: 1.0),
+                                duration: const Duration(seconds: 2),
+                                builder: (context, value, child) {
+                                  return Transform.rotate(
+                                    angle: value * 6.28318, // 2π radianes
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.refresh,
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
+                                        SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          )
+                        : Icon(
+                            Icons.refresh_rounded,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
-                        )
-                      : const Icon(Icons.refresh),
-                  tooltip: 'Buscar impresoras',
+                    tooltip: 'Buscar impresoras',
+                  ),
                 ),
-                // Botón contador de impresoras
-                FilledButton.icon(
-                  onPressed: () => _showPrinterSelectionDialog(context, provider),
-                  icon: const Icon(Icons.print),
-                  label: Text('${provider.printers.length}'),
+                //  button : Impresoras con mejor diseño y animación
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: provider.printers.isEmpty ? 0.0 : 1.0),
+                  duration: const Duration(milliseconds: 400),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: 0.8 + (0.2 * value),
+                      child: IconButton(
+                        onPressed: provider.printers.isEmpty 
+                            ? null 
+                            : () => _showPrinterSelectionDialog(context, provider),
+                        icon: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          child: Stack(
+                            children: [
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                child: Icon(
+                                  provider.printers.isEmpty 
+                                      ? Icons.print_disabled_outlined
+                                      : provider.selectedPrinter?.isConnected == true
+                                          ? Icons.print_rounded
+                                          : Icons.print_outlined,
+                                  key: ValueKey(provider.printers.isEmpty ? 'disabled' : 
+                                        provider.selectedPrinter?.isConnected == true ? 'connected' : 'available'),
+                                  color: provider.printers.isEmpty 
+                                      ? Theme.of(context).colorScheme.outline
+                                      : provider.selectedPrinter?.isConnected == true
+                                          ? Theme.of(context).colorScheme.primary
+                                          : Theme.of(context).colorScheme.secondary,
+                                ),
+                              ),
+                              if (provider.printers.isNotEmpty)
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: AnimatedScale(
+                                    scale: value,
+                                    duration: const Duration(milliseconds: 400),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: BoxDecoration(
+                                        color: provider.selectedPrinter?.isConnected == true
+                                            ? Theme.of(context).colorScheme.primary
+                                            : Theme.of(context).colorScheme.secondary,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Theme.of(context).colorScheme.surface,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 18,
+                                        minHeight: 18,
+                                      ),
+                                      child: Text(
+                                        provider.printers.length.toString(),
+                                        style: TextStyle(
+                                          color: provider.selectedPrinter?.isConnected == true
+                                              ? Theme.of(context).colorScheme.onPrimary
+                                              : Theme.of(context).colorScheme.onSecondary,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        tooltip: provider.printers.isEmpty 
+                            ? 'No hay impresoras disponibles'
+                            : 'Seleccionar Impresora (${provider.printers.length} encontradas)',
+                      ),
+                    );
+                  },
                 ),
-                const SizedBox(width: 16),
-              ],
+              ]
             );
           },
         ),
@@ -97,25 +200,30 @@ class _MainPageState extends State<MainPage> {
     IconData statusIcon;
     String statusText;
     String? statusSubtitle;
+    Color? iconColor;
 
     if (isConnecting) {
       statusIcon = Icons.sync;
       statusText = 'Conectando...';
       statusSubtitle = provider.selectedPrinter?.name;
+      iconColor = Theme.of(context).colorScheme.primary;
     } else if (isConnected) {
       statusIcon = Icons.check_circle;
       statusText = 'Impresora Conectada';
       statusSubtitle = provider.selectedPrinter?.name;
+      iconColor = Theme.of(context).colorScheme.primary;
     } else if (hasSelectedPrinter) {
       statusIcon = Icons.error;
       statusText = 'Impresora Desconectada';
       statusSubtitle = provider.selectedPrinter?.name;
+      iconColor = Theme.of(context).colorScheme.error;
     } else {
       statusIcon = Icons.print_disabled;
       statusText = 'Sin Impresora Seleccionada';
       statusSubtitle = provider.printers.isEmpty 
           ? 'No se encontraron impresoras'
-          : 'Toca el contador para seleccionar';
+          : 'Toca el botón "Impresoras" para seleccionar';
+      iconColor = Theme.of(context).colorScheme.outline;
     }
 
     return Container(
@@ -126,18 +234,33 @@ class _MainPageState extends State<MainPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Icono principal
-              isConnecting
-                  ? const CircularProgressIndicator()
-                  : Icon(
-                      statusIcon,
-                      size: 64,
-                    ),
+              // Icono principal con animación
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: isConnecting
+                    ? SizedBox(
+                        key: const ValueKey('progress'),
+                        width: 64,
+                        height: 64,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 4,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      )
+                    : Icon(
+                        key: ValueKey(statusIcon),
+                        statusIcon,
+                        size: 64,
+                        color: iconColor,
+                      ),
+              ),
               const SizedBox(height: 16),
               // Texto principal
               Text(
                 statusText,
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
                 textAlign: TextAlign.center,
               ),
               // Subtítulo si existe
@@ -145,7 +268,9 @@ class _MainPageState extends State<MainPage> {
                 const SizedBox(height: 8),
                 Text(
                   statusSubtitle,
-                  style: Theme.of(context).textTheme.bodyLarge,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -161,16 +286,25 @@ class _MainPageState extends State<MainPage> {
                         ? null 
                         : () => provider.printTestTicket(),
                     icon: provider.isPrinting
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onPrimary,
                             ),
                           )
-                        : const Icon(Icons.receipt),
-                    label: Text(provider.isPrinting ? 'Imprimiendo...' : 'Imprimir Prueba'),
+                        : const Icon(Icons.receipt_long),
+                    label: Text(provider.isPrinting ? 'Imprimiendo...' : 'Ticket de Compra (test)'),
+                  ),
+                  const SizedBox(height: 8),
+                  // Botón de configuración
+                  OutlinedButton.icon(
+                    onPressed: provider.isPrinting 
+                        ? null 
+                        : () => provider.printConfigurationTicket(),
+                    icon: const Icon(Icons.receipt_long),
+                    label: const Text( 'Ticket de Configuración'),
                   ),
                   const SizedBox(height: 12),
                 ],

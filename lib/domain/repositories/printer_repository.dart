@@ -25,4 +25,7 @@ abstract class PrinterRepository {
 
   /// Genera un ticket de prueba
   Future<List<int>> generateTestTicket();
+
+  /// Genera un ticket de configuración
+  Future<List<int>> generateConfigurationTicket();
 }

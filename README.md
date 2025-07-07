@@ -4,25 +4,33 @@ Aplicación de escritorio para Windows desarrollada en Flutter que permite gesti
 
 ## 🌟 Características
 
-- **UI Minimalista**: Interfaz limpia y moderna con Material Design 3
+- **UI Material Design 3**: Interfaz moderna que sigue las últimas guías de Google
+- **Modo Claro/Oscuro**: Soporte automático según la preferencia del sistema
+- **Accesibilidad**: Contraste automático y navegación optimizada
+- **Colores Semánticos**: Paleta de colores coherente y adaptativa
 - **Detección Automática**: Búsqueda automática de impresoras al iniciar la aplicación
 - **Gestión Simple**: Estado centralizado de conexión de impresoras
 - **Selector Intuitivo**: Diálogo elegante para seleccionar entre múltiples impresoras
-- **Indicadores Visuales**: Estados claros de conexión (Conectado/Desconectado/Sin seleccionar)
+- **Indicadores Visuales**: Estados claros de conexión con feedback inmediato
 - **Soporte Multiplataforma**: Compatible con conexiones USB, Bluetooth y red
+- **Animaciones Suaves**: Transiciones nativas de Material 3
 
-## 🎨 Interfaz de Usuario
+## 🎨 Diseño Material 3
 
-### Pantalla Principal
-- **AppBar**: Incluye el nombre de la aplicación, botón de actualización y contador de impresoras disponibles
-- **Cuerpo Central**: Muestra el estado actual de la impresora con iconografía intuitiva
-- **Controles**: Botones de acción rápida para conectar/desconectar
+### Implementación Completa
+- ✅ **ColorScheme.fromSeed()**: Paleta generada automáticamente
+- ✅ **Tipografía Semántica**: Jerarquía textual estándar
+- ✅ **Componentes Nativos**: AlertDialog, Card, FilledButton, Badge, Chip
+- ✅ **Estados Visuales**: Feedback táctil y visual mejorado
+- ✅ **Espaciado Consistente**: Padding y margin estandarizados
 
-### Diálogo de Selección
-- Lista completa de impresoras detectadas
-- Información detallada de cada dispositivo (nombre, dirección, tipo de conexión)
-- Estados visuales de conexión
-- Actualización en tiempo real
+### Componentes Utilizados
+- **FilledButton.icon**: Acciones primarias importantes
+- **OutlinedButton.icon**: Acciones secundarias
+- **Card**: Contenedores de información
+- **Badge**: Indicadores numéricos
+- **Chip**: Estados y etiquetas
+- **CircularProgressIndicator**: Estados de carga
 
 ## 🚀 Ejecución
 

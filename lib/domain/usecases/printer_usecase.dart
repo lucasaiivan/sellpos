@@ -65,4 +65,14 @@ class PrinterUseCase {
       throw Exception('Error al imprimir datos: $e');
     }
   }
+
+  /// Imprime un ticket de configuración
+  Future<void> printConfigurationTicket(PrinterEntity printer) async {
+    try {
+      final data = await _repository.generateConfigurationTicket();
+      await _repository.printData(printer, data);
+    } catch (e) {
+      throw Exception('Error al imprimir ticket de configuración: $e');
+    }
+  }
 }

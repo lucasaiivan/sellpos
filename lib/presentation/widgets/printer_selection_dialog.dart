@@ -20,23 +20,24 @@ class PrinterSelectionDialog extends StatelessWidget {
         height: 500,
         child: Column(
           children: [
-            // Información del header
+            // Información del header con mejor diseño
             Card(
-              color: Theme.of(context).colorScheme.primaryContainer,
+              color: Theme.of(context).colorScheme.secondaryContainer,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      color: Theme.of(context).colorScheme.onSecondaryContainer,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         '${provider.printers.length} impresora${provider.printers.length != 1 ? 's' : ''} encontrada${provider.printers.length != 1 ? 's' : ''}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color: Theme.of(context).colorScheme.onSecondaryContainer,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -46,7 +47,7 @@ class PrinterSelectionDialog extends StatelessWidget {
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color: Theme.of(context).colorScheme.onSecondaryContainer,
                         ),
                       ),
                   ],
@@ -65,15 +66,18 @@ class PrinterSelectionDialog extends StatelessWidget {
               ? null 
               : () => provider.scanForPrinters(),
           icon: provider.isScanning
-              ? const SizedBox(
+              ? SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 )
               : const Icon(Icons.refresh),
           label: Text(provider.isScanning ? 'Buscando...' : 'Actualizar'),
         ),
-        TextButton(
+        FilledButton.tonal(
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cerrar'),
         ),
@@ -95,7 +99,9 @@ class PrinterSelectionDialog extends StatelessWidget {
             const SizedBox(height: 24),
             Text(
               'No se encontraron impresoras',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
@@ -111,10 +117,13 @@ class PrinterSelectionDialog extends StatelessWidget {
                   ? null 
                   : () => provider.scanForPrinters(),
               icon: provider.isScanning
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
                     )
                   : const Icon(Icons.refresh),
               label: Text(provider.isScanning ? 'Buscando...' : 'Buscar de nuevo'),
@@ -132,7 +141,7 @@ class PrinterSelectionDialog extends StatelessWidget {
         final isSelected = provider.selectedPrinter?.address == printer.address;
         
         return Card(
-          elevation: isSelected ? 4 : 1,
+          elevation: isSelected ? 3 : 1,
           color: isSelected 
               ? Theme.of(context).colorScheme.primaryContainer 
               : null,
@@ -146,10 +155,14 @@ class PrinterSelectionDialog extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  // Avatar con estado
+                  // Avatar con estado mejorado
                   Badge(
                     isLabelVisible: printer.isConnected,
-                    label: const Icon(Icons.check, size: 12),
+                    label: Icon(
+                      Icons.check, 
+                      size: 12,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     child: CircleAvatar(
                       radius: 24,
@@ -188,7 +201,9 @@ class PrinterSelectionDialog extends StatelessWidget {
                             Icon(
                               Icons.location_on,
                               size: 16,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: isSelected 
+                                  ? Theme.of(context).colorScheme.onPrimaryContainer
+                                  : Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 4),
                             Expanded(
@@ -209,7 +224,9 @@ class PrinterSelectionDialog extends StatelessWidget {
                             Icon(
                               _getConnectionIcon(printer.connectionType),
                               size: 16,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: isSelected 
+                                  ? Theme.of(context).colorScheme.onPrimaryContainer
+                                  : Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -225,7 +242,7 @@ class PrinterSelectionDialog extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Indicadores de estado
+                  // Indicadores de estado mejorados
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -236,6 +253,7 @@ class PrinterSelectionDialog extends StatelessWidget {
                           side: BorderSide.none,
                           labelStyle: TextStyle(
                             fontSize: 12,
+                            fontWeight: FontWeight.w500,
                             color: Theme.of(context).colorScheme.onSecondaryContainer,
                           ),
                         ),

@@ -40,6 +40,20 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: true,
           fontFamily: 'Segoe UI',
+          // Configuraciones adicionales de Material 3
+          appBarTheme: const AppBarTheme(
+            centerTitle: false,
+            elevation: 0,
+          ),
+          cardTheme: const CardThemeData(
+            elevation: 1,
+            margin: EdgeInsets.zero,
+          ),
+          filledButtonTheme: FilledButtonThemeData(
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(48, 48),
+            ),
+          ),
         ),
         darkTheme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
@@ -48,6 +62,20 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: true,
           fontFamily: 'Segoe UI',
+          // Configuraciones adicionales de Material 3
+          appBarTheme: const AppBarTheme(
+            centerTitle: false,
+            elevation: 0,
+          ),
+          cardTheme: const CardThemeData(
+            elevation: 1,
+            margin: EdgeInsets.zero,
+          ),
+          filledButtonTheme: FilledButtonThemeData(
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(48, 48),
+            ),
+          ),
         ),
         themeMode: ThemeMode.system,
         home: const MainPage(),

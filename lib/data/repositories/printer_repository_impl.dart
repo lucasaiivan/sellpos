@@ -176,7 +176,7 @@ class PrinterRepositoryImpl implements PrinterRepository {
       );
       
       bytes += generator.text(
-        '* SUPER MARKET DEMO *',
+        'SUPER MARKET DEMO',
         styles: const PosStyles(
           align: PosAlign.center,
           bold: true,
@@ -463,6 +463,248 @@ class PrinterRepositoryImpl implements PrinterRepository {
     } catch (e) {
       debugPrint('Error generando ticket de prueba: $e');
       throw Exception('Error al generar ticket de prueba: $e');
+    }
+  }
+
+  @override
+  Future<List<int>> generateConfigurationTicket() async {
+    try {
+      // Genera un ticket de configuración estilo SELL
+      final profile = await CapabilityProfile.load();
+      final generator = Generator(PaperSize.mm80, profile);
+      
+      List<int> bytes = [];
+      final now = DateTime.now();
+      
+      // Encabezado principal con logo
+      bytes += generator.text(
+        '================================',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.text(
+        'SELLPOS CONFIGURACION',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          height: PosTextSize.size2,
+          width: PosTextSize.size2,
+        ),
+      );
+      
+      bytes += generator.text(
+        '================================',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        'CONFIGURACION DE IMPRESORA',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          underline: true,
+        ),
+      );
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        '--------------------------------',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // Información de la configuración
+      bytes += generator.row([
+        PosColumn(text: 'FECHA:', width: 4, styles: const PosStyles(bold: true)),
+        PosColumn(text: '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}', width: 8, styles: const PosStyles(align: PosAlign.right)),
+      ]);
+      
+      bytes += generator.row([
+        PosColumn(text: 'HORA:', width: 4, styles: const PosStyles(bold: true)),
+        PosColumn(text: '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}', width: 8, styles: const PosStyles(align: PosAlign.right)),
+      ]);
+      
+      bytes += generator.row([
+        PosColumn(text: 'VERSION:', width: 4, styles: const PosStyles(bold: true)),
+        PosColumn(text: 'SellPOS v1.0', width: 8, styles: const PosStyles(align: PosAlign.right)),
+      ]);
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        'ESTADO DE CONEXION',
+        styles: const PosStyles(
+          bold: true,
+          align: PosAlign.center,
+          underline: true,
+        ),
+      );
+      
+      bytes += generator.text('');
+      bytes += generator.text('- Impresora conectada correctamente');
+      bytes += generator.text('- Puerto de comunicacion activo');
+      bytes += generator.text('- Drivers instalados');
+      bytes += generator.text('- Sistema de punto de venta listo');
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        '--------------------------------',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // Información de configuración de la app
+      bytes += generator.text(
+        'CONFIGURACION DISPONIBLE',
+        styles: const PosStyles(
+          bold: true,
+          align: PosAlign.center,
+          underline: true,
+        ),
+      );
+      
+      bytes += generator.text('');
+      bytes += generator.text('DESDE LA APP MOVIL:');
+      bytes += generator.text('   * Configurar productos');
+      bytes += generator.text('   * Gestionar inventario');
+      bytes += generator.text('   * Reportes de ventas');
+      bytes += generator.text('   * Control de usuarios');
+      
+      bytes += generator.text('');
+      bytes += generator.text('DESDE LA WEB:');
+      bytes += generator.text('   * Panel administrativo');
+      bytes += generator.text('   * Configuracion avanzada');
+      bytes += generator.text('   * Respaldos de datos');
+      bytes += generator.text('   * Actualizaciones del sistema');
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        '--------------------------------',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // Instrucciones de conexión
+      bytes += generator.text(
+        'COMO CONECTAR',
+        styles: const PosStyles(
+          bold: true,
+          align: PosAlign.center,
+          underline: true,
+        ),
+      );
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        'DESDE DISPOSITIVO MOVIL:',
+        styles: const PosStyles(bold: true),
+      );
+      bytes += generator.text('1. Abrir app SellPOS');
+      bytes += generator.text('2. Ir a Configuracion');
+      bytes += generator.text('3. Seleccionar "Impresoras"');
+      bytes += generator.text('4. Buscar dispositivos');
+      bytes += generator.text('5. Conectar y probar');
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        'DESDE LA WEB:',
+        styles: const PosStyles(bold: true),
+      );
+      bytes += generator.text('1. Acceder al panel web');
+      bytes += generator.text('2. Menu -> Dispositivos');
+      bytes += generator.text('3. Agregar nueva impresora');
+      bytes += generator.text('4. Configurar parametros');
+      bytes += generator.text('5. Guardar configuracion');
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        '--------------------------------',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // Información de soporte
+      bytes += generator.text(
+        'SOPORTE TECNICO',
+        styles: const PosStyles(
+          bold: true,
+          align: PosAlign.center,
+          underline: true,
+        ),
+      );
+      
+      bytes += generator.text('');
+      bytes += generator.text('Email: soporte@sellpos.com');
+      bytes += generator.text('Tel: +52 (55) 1234-5678');
+      bytes += generator.text('Web: www.sellpos.com');
+      bytes += generator.text('Chat: Disponible 24/7');
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        '================================',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // QR Code simulado para configuración
+      bytes += generator.text(
+        '[CODIGO QR PARA CONFIGURACION]',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        'Escanea para configuracion rapida',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        'Impresora configurada y lista',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+        ),
+      );
+      
+      bytes += generator.text(
+        'para punto de venta',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+        ),
+      );
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        '================================',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // Pie del ticket
+      bytes += generator.text('');
+      bytes += generator.text(
+        'SELLPOS - Gestiona Tus Ventas',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+        ),
+      );
+      
+      bytes += generator.text(
+        'Powered by Logica Booleana',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.text('');
+      bytes += generator.text(
+        'Ticket generado: ${now.day}/${now.month}/${now.year} ${now.hour}:${now.minute.toString().padLeft(2, '0')}',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // Corte final
+      bytes += generator.feed(3);
+      bytes += generator.cut();
+      
+      return bytes;
+    } catch (e) {
+      debugPrint('Error generando ticket de configuración: $e');
+      throw Exception('Error al generar ticket de configuración: $e');
     }
   }
 
