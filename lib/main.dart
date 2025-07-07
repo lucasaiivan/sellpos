@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'data/repositories/printer_repository_impl.dart';
 import 'domain/usecases/printer_usecase.dart';
 import 'presentation/providers/printer_provider.dart';
-import 'presentation/pages/printer_config_page.dart';
+import 'presentation/pages/main_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'SellPOS - Configuración de Impresora',
+        title: 'SellPOS - Sistema de Impresoras',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
           fontFamily: 'Segoe UI',
         ),
         themeMode: ThemeMode.system,
-        home: const PrinterConfigPage(),
+        home: const MainPage(),
       ),
     );
   }
