@@ -200,9 +200,7 @@
         }
 
         async function configurePrinter() {
-            const result = await makeRequest('/configure-printer', 'POST', {
-                printerName: 'prueba'
-            });
+            const result = await makeRequest('/configure-printer', 'POST', {});
             displayResponse('configResponse', result);
         }
 

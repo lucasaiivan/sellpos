@@ -42,10 +42,8 @@ void main() async {
   // 1. Verificar estado del servidor
   await makeRequest('/status', 'Verificando estado del servidor');
   
-  // 2. Configurar impresora (usar nombre genérico para pruebas)
-  await makeRequest('/configure-printer', 'Configurando impresora de prueba', body: {
-    'printerName': 'prueba'
-  });
+  // 2. Configurar impresora (ya no necesita nombre específico)
+  await makeRequest('/configure-printer', 'Configurando impresora preconfigurada', body: {});
   
   // 3. Probar impresión de ticket de prueba (con POST)
   await makeRequest('/test-printer', 'Enviando ticket de prueba', body: {});

@@ -46,9 +46,9 @@ GET http://localhost:8080/status
 POST http://localhost:8080/configure-printer
 Content-Type: application/json
 
-{
-  "printerName": "nombre_de_la_impresora"
-}
+{}
+```
+**Nota**: Ya no requiere parámetro `printerName`. Usa automáticamente la impresora configurada en la aplicación.
 ```
 
 ### 3. Ticket de Prueba

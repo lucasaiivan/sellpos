@@ -406,18 +406,12 @@ class _HttpServerConfigDialogState extends State<HttpServerConfigDialog> {
         final response = await http.post(
           Uri.parse('${provider.serverUrl}/configure-printer'),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'printerName': 'Impresora de Prueba', // Nombre genérico que activará la lógica de primera impresora disponible
-            'config': {
-              'name': 'Impresora de Prueba',
-              'configuredAt': DateTime.now().toIso8601String(),
-            }
-          }),
+          body: jsonEncode({}), // Ya no necesita parámetros específicos
         ).timeout(const Duration(seconds: 5));
         
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
-          return 'Configuración exitosa: ${data['message']} (${data['printer']})';
+          return 'Configuración exitosa: ${data['message']}';
         } else {
           final data = jsonDecode(response.body);
           throw Exception('${data['message']}');

@@ -10,7 +10,6 @@ import 'package:shelf_cors_headers/shelf_cors_headers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/models/http_server_config.dart';
-import '../../domain/entities/printer_entity.dart';
 import '../../presentation/providers/printer_provider.dart';
 
 class HttpServerService {
@@ -156,10 +155,9 @@ class HttpServerService {
 
   static Future<Response> _handleConfigurePrinter(Request request) async {
     try {
-      final body = await request.readAsString();
-      final data = jsonDecode(body);
+      await request.readAsString(); // Leer el body aunque no lo usemos específicamente
       
-      _logger.i('Configurando impresora: ${data['printerName']}');
+      _logger.i('Configurando impresora (usando impresora preconfigurada)');
       
       if (_printerProvider == null) {
         return Response(503,
@@ -171,66 +169,77 @@ class HttpServerService {
         );
       }
 
+      // NUEVA LÓGICA: Usar la impresora ya configurada en la aplicación
+      if (_printerProvider!.selectedPrinter != null) {
+        final selectedPrinter = _printerProvider!.selectedPrinter!;
+        
+        // Si ya está conectada, solo confirmar
+        if (selectedPrinter.isConnected) {
+          return Response.ok(
+            jsonEncode({
+              'status': 'ok',
+              'message': 'Impresora ya configurada y conectada',
+              'printer': selectedPrinter.name ?? 'Impresora configurada',
+            }),
+            headers: {'content-type': 'application/json'},
+          );
+        } else {
+          // Intentar conectar la impresora seleccionada
+          final connected = await _printerProvider!.connectToSelectedPrinter();
+          
+          if (connected) {
+            return Response.ok(
+              jsonEncode({
+                'status': 'ok',
+                'message': 'Impresora configurada y conectada correctamente',
+                'printer': selectedPrinter.name ?? 'Impresora configurada',
+              }),
+              headers: {'content-type': 'application/json'},
+            );
+          } else {
+            return Response(400,
+              body: jsonEncode({
+                'status': 'error',
+                'message': 'Error al conectar con la impresora configurada: ${selectedPrinter.name ?? 'Impresora'}',
+              }),
+              headers: {'content-type': 'application/json'},
+            );
+          }
+        }
+      }
+
+      // FALLBACK: Si no hay impresora seleccionada, buscar una disponible
       final availablePrinters = _printerProvider!.printers;
       
       if (availablePrinters.isEmpty) {
-        return Response(404,
+        return Response(400,
           body: jsonEncode({
             'status': 'error',
-            'message': 'No hay impresoras disponibles. Asegúrese de que hay impresoras conectadas y ejecute una búsqueda primero.',
+            'message': 'No hay impresoras configuradas. Por favor, configure una impresora desde la aplicación primero.',
           }),
           headers: {'content-type': 'application/json'},
         );
       }
       
-      // Si el nombre es genérico (para pruebas), usar la primera impresora disponible
-      final printerName = data['printerName']?.toString() ?? '';
-      PrinterEntity? matchingPrinter;
+      // Usar la primera impresora disponible como fallback
+      final fallbackPrinter = availablePrinters.first;
+      await _printerProvider!.selectPrinter(fallbackPrinter);
+      final connected = await _printerProvider!.connectToSelectedPrinter();
       
-      if (printerName.toLowerCase().contains('prueba') || 
-          printerName.toLowerCase().contains('test') || 
-          printerName.isEmpty ||
-          !availablePrinters.any((p) => p.name?.toLowerCase().contains(printerName.toLowerCase()) ?? false)) {
-        // Para pruebas o si no se encuentra coincidencia exacta, usar la primera impresora disponible
-        matchingPrinter = availablePrinters.first;
-        _logger.i('Usando primera impresora disponible: ${matchingPrinter.name}');
+      if (connected) {
+        return Response.ok(
+          jsonEncode({
+            'status': 'ok',
+            'message': 'Impresora configurada automáticamente',
+            'printer': fallbackPrinter.name ?? 'Impresora automática',
+          }),
+          headers: {'content-type': 'application/json'},
+        );
       } else {
-        // Buscar por nombre específico
-        matchingPrinter = availablePrinters.where(
-          (printer) => printer.name?.toLowerCase().contains(
-            printerName.toLowerCase()
-          ) ?? false
-        ).firstOrNull;
-      }
-      
-      if (matchingPrinter != null) {
-        await _printerProvider!.selectPrinter(matchingPrinter);
-        final connected = await _printerProvider!.connectToSelectedPrinter();
-        
-        if (connected) {
-          return Response.ok(
-            jsonEncode({
-              'status': 'ok',
-              'message': 'Impresora configurada y conectada correctamente',
-              'printer': matchingPrinter.name,
-              'availablePrinters': availablePrinters.length,
-            }),
-            headers: {'content-type': 'application/json'},
-          );
-        } else {
-          return Response(400,
-            body: jsonEncode({
-              'status': 'error',
-              'message': 'Impresora encontrada pero no se pudo conectar: ${matchingPrinter.name}',
-            }),
-            headers: {'content-type': 'application/json'},
-          );
-        }
-      } else {
-        return Response(404,
+        return Response(400,
           body: jsonEncode({
             'status': 'error',
-            'message': 'Impresora "$printerName" no encontrada. Impresoras disponibles: ${availablePrinters.map((p) => p.name).join(', ')}',
+            'message': 'Error al conectar con la impresora: ${fallbackPrinter.name ?? 'Impresora'}',
           }),
           headers: {'content-type': 'application/json'},
         );
@@ -261,24 +270,33 @@ class HttpServerService {
         );
       }
 
+      // Si no hay impresora seleccionada, intentar configurar una automáticamente
       if (_printerProvider!.selectedPrinter == null) {
-        return Response(400,
-          body: jsonEncode({
-            'status': 'error',
-            'message': 'No hay impresora seleccionada. Primero configure una impresora.',
-          }),
-          headers: {'content-type': 'application/json'},
-        );
+        if (_printerProvider!.printers.isNotEmpty) {
+          await _printerProvider!.selectPrinter(_printerProvider!.printers.first);
+        } else {
+          return Response(400,
+            body: jsonEncode({
+              'status': 'error',
+              'message': 'No hay impresoras configuradas. Configure una impresora desde la aplicación primero.',
+            }),
+            headers: {'content-type': 'application/json'},
+          );
+        }
       }
 
+      // Si la impresora no está conectada, intentar conectar
       if (!(_printerProvider!.selectedPrinter?.isConnected ?? false)) {
-        return Response(400,
-          body: jsonEncode({
-            'status': 'error',
-            'message': 'La impresora seleccionada no está conectada',
-          }),
-          headers: {'content-type': 'application/json'},
-        );
+        final connected = await _printerProvider!.connectToSelectedPrinter();
+        if (!connected) {
+          return Response(400,
+            body: jsonEncode({
+              'status': 'error',
+              'message': 'Error al conectar con la impresora: ${_printerProvider!.selectedPrinter?.name ?? 'Impresora'}',
+            }),
+            headers: {'content-type': 'application/json'},
+          );
+        }
       }
 
       // Ejecutar prueba de impresión real
@@ -320,24 +338,33 @@ class HttpServerService {
         );
       }
 
+      // Si no hay impresora seleccionada, intentar configurar una automáticamente
       if (_printerProvider!.selectedPrinter == null) {
-        return Response(400,
-          body: jsonEncode({
-            'status': 'error',
-            'message': 'No hay impresora seleccionada. Primero configure una impresora.',
-          }),
-          headers: {'content-type': 'application/json'},
-        );
+        if (_printerProvider!.printers.isNotEmpty) {
+          await _printerProvider!.selectPrinter(_printerProvider!.printers.first);
+        } else {
+          return Response(400,
+            body: jsonEncode({
+              'status': 'error',
+              'message': 'No hay impresoras configuradas. Configure una impresora desde la aplicación primero.',
+            }),
+            headers: {'content-type': 'application/json'},
+          );
+        }
       }
 
+      // Si la impresora no está conectada, intentar conectar
       if (!(_printerProvider!.selectedPrinter?.isConnected ?? false)) {
-        return Response(400,
-          body: jsonEncode({
-            'status': 'error',
-            'message': 'La impresora seleccionada no está conectada',
-          }),
-          headers: {'content-type': 'application/json'},
-        );
+        final connected = await _printerProvider!.connectToSelectedPrinter();
+        if (!connected) {
+          return Response(400,
+            body: jsonEncode({
+              'status': 'error',
+              'message': 'Error al conectar con la impresora: ${_printerProvider!.selectedPrinter?.name ?? 'Impresora'}',
+            }),
+            headers: {'content-type': 'application/json'},
+          );
+        }
       }
 
       // Extraer datos del request
