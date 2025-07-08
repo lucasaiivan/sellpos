@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de API SellPOS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .endpoint-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .endpoint-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button.success {
+            background: #27ae60;
+        }
+        button.error {
+            background: #e74c3c;
+        }
+        .response {
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .status.ok {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+        .status.error {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+        .json-input {
+            width: 100%;
+            height: 150px;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖨️ Prueba de API SellPOS</h1>
+        
+        <div class="endpoint-section">
+            <div class="endpoint-title">1. Estado del Servidor</div>
+            <button onclick="checkStatus()">Verificar Estado</button>
+            <div id="statusResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <div class="endpoint-section">
+            <div class="endpoint-title">2. Configurar Impresora</div>
+            <button onclick="configurePrinter()">Configurar Impresora de Prueba</button>
+            <div id="configResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <div class="endpoint-section">
+            <div class="endpoint-title">3. Prueba de Impresión</div>
+            <button onclick="testPrinter()">Enviar Ticket de Prueba</button>
+            <div id="testResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <div class="endpoint-section">
+            <div class="endpoint-title">4. Imprimir Ticket Personalizado</div>
+            <textarea class="json-input" id="ticketData" placeholder="Edita el JSON del ticket aquí...">{
+  "businessName": "Mi Tienda Online",
+  "products": [
+    {
+      "quantity": "2",
+      "description": "Camiseta Básica",
+      "price": 19.99
+    },
+    {
+      "quantity": "1",
+      "description": "Pantalón Jeans",
+      "price": 49.99
+    }
+  ],
+  "total": 89.97,
+  "paymentMethod": "Tarjeta de Crédito",
+  "customerName": "Juan Pérez",
+  "cashReceived": 100.00,
+  "change": 10.03
+}</textarea>
+            <button onclick="printTicket()">Imprimir Ticket</button>
+            <div id="printResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <div class="endpoint-section">
+            <div class="endpoint-title">📖 Documentación de la API</div>
+            <p><strong>URL Base:</strong> http://localhost:8080</p>
+            <p><strong>Endpoints disponibles:</strong></p>
+            <ul>
+                <li><code>GET /status</code> - Verificar estado del servidor</li>
+                <li><code>POST /configure-printer</code> - Configurar impresora</li>
+                <li><code>POST /test-printer</code> - Enviar ticket de prueba</li>
+                <li><code>POST /print-ticket</code> - Imprimir ticket personalizado</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+
+        async function makeRequest(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: body ? JSON.stringify(body) : null
+                };
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    data: data
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    status: 0,
+                    data: { error: error.message }
+                };
+            }
+        }
+
+        function displayResponse(elementId, result) {
+            const element = document.getElementById(elementId);
+            const status = result.success ? 'ok' : 'error';
+            
+            element.innerHTML = `<div class="status ${status}">Status: ${result.status}</div>` +
+                              JSON.stringify(result.data, null, 2);
+            element.style.display = 'block';
+        }
+
+        async function checkStatus() {
+            const result = await makeRequest('/status');
+            displayResponse('statusResponse', result);
+        }
+
+        async function configurePrinter() {
+            const result = await makeRequest('/configure-printer', 'POST', {
+                printerName: 'prueba'
+            });
+            displayResponse('configResponse', result);
+        }
+
+        async function testPrinter() {
+            const result = await makeRequest('/test-printer', 'POST', {});
+            displayResponse('testResponse', result);
+        }
+
+        async function printTicket() {
+            try {
+                const ticketData = JSON.parse(document.getElementById('ticketData').value);
+                const result = await makeRequest('/print-ticket', 'POST', ticketData);
+                displayResponse('printResponse', result);
+            } catch (error) {
+                displayResponse('printResponse', {
+                    success: false,
+                    status: 0,
+                    data: { error: 'JSON inválido: ' + error.message }
+                });
+            }
+        }
+
+        // Verificar estado al cargar la página
+        window.onload = function() {
+            checkStatus();
+        };
+    </script>
+</body>
+</html>
