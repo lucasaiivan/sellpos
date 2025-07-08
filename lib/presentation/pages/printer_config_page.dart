@@ -266,12 +266,12 @@ class PrinterConfigPage extends StatelessWidget {
                 isConnecting: provider.isConnecting && 
                     provider.selectedPrinter?.address == printer.address,
                 onTap: () => provider.selectPrinter(printer),
-                onConnect: () {
-                  provider.selectPrinter(printer);
+                onConnect: () async {
+                  await provider.selectPrinter(printer);
                   provider.connectToSelectedPrinter();
                 },
-                onDisconnect: () {
-                  provider.selectPrinter(printer);
+                onDisconnect: () async {
+                  await provider.selectPrinter(printer);
                   provider.disconnectFromSelectedPrinter();
                 },
               ),

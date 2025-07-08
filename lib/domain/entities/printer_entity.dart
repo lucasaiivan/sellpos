@@ -16,6 +16,25 @@ class PrinterEntity {
     this.productId,
   });
 
+  /// Crea una copia de la entidad con los campos especificados modificados
+  PrinterEntity copyWith({
+    String? address,
+    String? name,
+    PrinterConnectionType? connectionType,
+    bool? isConnected,
+    String? vendorId,
+    String? productId,
+  }) {
+    return PrinterEntity(
+      address: address ?? this.address,
+      name: name ?? this.name,
+      connectionType: connectionType ?? this.connectionType,
+      isConnected: isConnected ?? this.isConnected,
+      vendorId: vendorId ?? this.vendorId,
+      productId: productId ?? this.productId,
+    );
+  }
+
   @override
   String toString() {
     return 'PrinterEntity(name: $name, address: $address, connectionType: $connectionType, isConnected: $isConnected)';

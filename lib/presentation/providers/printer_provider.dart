@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/printer_entity.dart';
 import '../../domain/usecases/printer_usecase.dart';
+import '../../core/services/printer_persistence_service.dart';
 
 /// Provider para el manejo del estado de las impresoras térmicas
 class PrinterProvider extends ChangeNotifier {
@@ -18,6 +19,7 @@ class PrinterProvider extends ChangeNotifier {
 
   PrinterProvider(this._printerUseCase) {
     _initPrintersStream();
+    _loadSavedPrinter();
   }
 
   // Getters
@@ -52,7 +54,24 @@ class PrinterProvider extends ChangeNotifier {
         (printer) => printer.address == _selectedPrinter!.address,
         orElse: () => _selectedPrinter!,
       );
-      _selectedPrinter = updatedPrinter;
+      
+      // Solo actualizar si el estado cambió
+      if (updatedPrinter.isConnected != _selectedPrinter!.isConnected) {
+        _selectedPrinter = updatedPrinter;
+      }
+    }
+  }
+
+  /// Carga la impresora guardada desde la persistencia
+  Future<void> _loadSavedPrinter() async {
+    try {
+      final savedPrinter = await PrinterPersistenceService.loadSelectedPrinter();
+      if (savedPrinter != null) {
+        _selectedPrinter = savedPrinter;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error al cargar impresora guardada: $e');
     }
   }
 
@@ -89,9 +108,17 @@ class PrinterProvider extends ChangeNotifier {
   }
 
   /// Selecciona una impresora
-  void selectPrinter(PrinterEntity printer) {
+  Future<void> selectPrinter(PrinterEntity printer) async {
     _selectedPrinter = printer;
     _clearError();
+    
+    // Guardar la selección en persistencia
+    try {
+      await PrinterPersistenceService.saveSelectedPrinter(printer);
+    } catch (e) {
+      debugPrint('Error al guardar impresora seleccionada: $e');
+    }
+    
     notifyListeners();
   }
 
@@ -111,6 +138,9 @@ class PrinterProvider extends ChangeNotifier {
       
       if (isConnected) {
         _selectedPrinter = _selectedPrinter!.copyWith(isConnected: true);
+        
+        // Actualizar la persistencia con el nuevo estado
+        await PrinterPersistenceService.saveSelectedPrinter(_selectedPrinter!);
       } else {
         _setError('No se pudo conectar a la impresora');
       }
@@ -131,11 +161,24 @@ class PrinterProvider extends ChangeNotifier {
 
     try {
       _clearError();
-      await _printerUseCase.disconnectFromPrinter(_selectedPrinter!);
+      
+      // Actualizar estado localmente ANTES de llamar al repositorio
       _selectedPrinter = _selectedPrinter!.copyWith(isConnected: false);
       notifyListeners();
+      
+      // Llamar al repositorio para desconectar físicamente
+      await _printerUseCase.disconnectFromPrinter(_selectedPrinter!);
+      
+      // Actualizar la persistencia con el nuevo estado
+      await PrinterPersistenceService.saveSelectedPrinter(_selectedPrinter!);
+      
     } catch (e) {
       _setError('Error al desconectar: $e');
+      // En caso de error, mantener el estado desconectado
+      if (_selectedPrinter != null) {
+        _selectedPrinter = _selectedPrinter!.copyWith(isConnected: false);
+        notifyListeners();
+      }
     }
   }
 
@@ -258,25 +301,5 @@ class PrinterProvider extends ChangeNotifier {
     _debounceTimer?.cancel();
     _printersSubscription?.cancel();
     super.dispose();
-  }
-}
-
-extension on PrinterEntity {
-  PrinterEntity copyWith({
-    String? address,
-    String? name,
-    PrinterConnectionType? connectionType,
-    bool? isConnected,
-    String? vendorId,
-    String? productId,
-  }) {
-    return PrinterEntity(
-      address: address ?? this.address,
-      name: name ?? this.name,
-      connectionType: connectionType ?? this.connectionType,
-      isConnected: isConnected ?? this.isConnected,
-      vendorId: vendorId ?? this.vendorId,
-      productId: productId ?? this.productId,
-    );
   }
 }

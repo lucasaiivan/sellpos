@@ -12,9 +12,14 @@ class PrinterSelectionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      icon: const Icon(Icons.print),
-      title: const Text('Seleccionar Impresora'),
+    return AlertDialog( 
+      title: Row(
+        children: [
+          const Icon(Icons.print),
+          const SizedBox(width: 8),
+          const Text('Seleccionar Impresora'),
+        ],
+      ),
       content: SizedBox(
         width: 600,
         height: 500,
@@ -24,7 +29,7 @@ class PrinterSelectionDialog extends StatelessWidget {
             Card(
               color: Theme.of(context).colorScheme.secondaryContainer,
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
                     Icon(
@@ -135,72 +140,68 @@ class PrinterSelectionDialog extends StatelessWidget {
 
     return ListView.separated(
       itemCount: provider.printers.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 8),
+      separatorBuilder: (context, index) => const SizedBox(height: 4),
       itemBuilder: (context, index) {
         final printer = provider.printers[index];
         final isSelected = provider.selectedPrinter?.address == printer.address;
         
         return Card(
-          elevation: isSelected ? 3 : 1,
+          elevation: isSelected ? 2 : 0,
           color: isSelected 
               ? Theme.of(context).colorScheme.primaryContainer 
               : null,
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
-            onTap: () {
-              provider.selectPrinter(printer);
-              Navigator.of(context).pop();
+            onTap: () async {
+              await provider.selectPrinter(printer);
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
             },
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  // Avatar con estado mejorado
-                  Badge(
-                    isLabelVisible: printer.isConnected,
-                    label: Icon(
-                      Icons.check, 
-                      size: 12,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    child: CircleAvatar(
-                      radius: 24,
-                      backgroundColor: printer.isConnected 
-                          ? Theme.of(context).colorScheme.primaryContainer
-                          : Theme.of(context).colorScheme.surfaceVariant,
-                      foregroundColor: printer.isConnected 
-                          ? Theme.of(context).colorScheme.onPrimaryContainer
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
-                      child: Icon(
-                        printer.isConnected ? Icons.print : Icons.print_disabled,
-                        size: 20,
-                      ),
+                  // Avatar compacto
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: printer.isConnected 
+                        ? Theme.of(context).colorScheme.primaryContainer
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
+                    foregroundColor: printer.isConnected 
+                        ? Theme.of(context).colorScheme.onPrimaryContainer
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                    child: Icon(
+                      printer.isConnected ? Icons.print : Icons.print_disabled,
+                      size: 18,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  // Información de la impresora
+                  const SizedBox(width: 12),
+                  // Información de la impresora compacta
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           (printer.name?.isNotEmpty == true) 
                               ? printer.name! 
                               : 'Impresora sin nombre',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: isSelected 
                                 ? Theme.of(context).colorScheme.onPrimaryContainer
                                 : null,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Row(
                           children: [
                             Icon(
-                              Icons.location_on,
-                              size: 16,
+                              _getConnectionIcon(printer.connectionType),
+                              size: 14,
                               color: isSelected 
                                   ? Theme.of(context).colorScheme.onPrimaryContainer
                                   : Theme.of(context).colorScheme.onSurfaceVariant,
@@ -208,33 +209,14 @@ class PrinterSelectionDialog extends StatelessWidget {
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
-                                printer.address ?? 'Dirección desconocida',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                '${printer.connectionType.name} • ${printer.address ?? 'Sin dirección'}',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                   color: isSelected 
                                       ? Theme.of(context).colorScheme.onPrimaryContainer
                                       : Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Icon(
-                              _getConnectionIcon(printer.connectionType),
-                              size: 16,
-                              color: isSelected 
-                                  ? Theme.of(context).colorScheme.onPrimaryContainer
-                                  : Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              printer.connectionType.name,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: isSelected 
-                                    ? Theme.of(context).colorScheme.onPrimaryContainer
-                                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -242,31 +224,34 @@ class PrinterSelectionDialog extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Indicadores de estado mejorados
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (printer.isConnected)
-                        Chip(
-                          label: const Text('Conectado'),
-                          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                          side: BorderSide.none,
-                          labelStyle: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                  // Indicador unificado - solo para seleccionados
+                  if (isSelected)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.check,
+                            size: 16,
                             color: Theme.of(context).colorScheme.onSecondaryContainer,
                           ),
-                        ),
-                      if (isSelected) ...[
-                        const SizedBox(height: 8),
-                        Icon(
-                          Icons.check_circle,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 24,
-                        ),
-                      ],
-                    ],
-                  ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Conectado',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.onSecondaryContainer,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),
