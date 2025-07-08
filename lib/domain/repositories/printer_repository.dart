@@ -28,4 +28,15 @@ abstract class PrinterRepository {
 
   /// Genera un ticket de configuración
   Future<List<int>> generateConfigurationTicket();
+
+  /// Genera un ticket personalizado con datos específicos
+  Future<List<int>> generateCustomTicket({
+    required String businessName,
+    required List<Map<String, dynamic>> products,
+    required double total,
+    required String paymentMethod,
+    String? customerName,
+    double? cashReceived,
+    double? change,
+  });
 }

@@ -260,6 +260,50 @@ class PrinterProvider extends ChangeNotifier {
     }
   }
 
+  /// Imprime un ticket personalizado con datos específicos
+  Future<void> printCustomTicket({
+    required String businessName,
+    required List<Map<String, dynamic>> products,
+    required double total,
+    required String paymentMethod,
+    String? customerName,
+    double? cashReceived,
+    double? change,
+  }) async {
+    if (_selectedPrinter == null) {
+      _setError('No hay una impresora seleccionada');
+      return;
+    }
+
+    if (!_selectedPrinter!.isConnected) {
+      _setError('La impresora no está conectada');
+      return;
+    }
+
+    try {
+      _isPrinting = true;
+      _clearError();
+      notifyListeners();
+
+      // Imprimir ticket personalizado usando el usecase
+      await _printerUseCase.printCustomTicket(
+        _selectedPrinter!,
+        businessName: businessName,
+        products: products,
+        total: total,
+        paymentMethod: paymentMethod,
+        customerName: customerName,
+        cashReceived: cashReceived,
+        change: change,
+      );
+    } catch (e) {
+      _setError('Error al imprimir ticket personalizado: $e');
+    } finally {
+      _isPrinting = false;
+      notifyListeners();
+    }
+  }
+
   /// Obtiene información detallada del estado de búsqueda
   String getScanStatusMessage() {
     if (_isScanning) {

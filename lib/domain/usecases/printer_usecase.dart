@@ -75,4 +75,31 @@ class PrinterUseCase {
       throw Exception('Error al imprimir ticket de configuración: $e');
     }
   }
+
+  /// Imprime un ticket personalizado
+  Future<void> printCustomTicket(
+    PrinterEntity printer, {
+    required String businessName,
+    required List<Map<String, dynamic>> products,
+    required double total,
+    required String paymentMethod,
+    String? customerName,
+    double? cashReceived,
+    double? change,
+  }) async {
+    try {
+      final data = await _repository.generateCustomTicket(
+        businessName: businessName,
+        products: products,
+        total: total,
+        paymentMethod: paymentMethod,
+        customerName: customerName,
+        cashReceived: cashReceived,
+        change: change,
+      );
+      await _repository.printData(printer, data);
+    } catch (e) {
+      throw Exception('Error al imprimir ticket personalizado: $e');
+    }
+  }
 }

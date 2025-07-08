@@ -43,6 +43,17 @@ dependencies:
   
   # Shared preferences for persistence
   shared_preferences: ^2.2.2
+  
+  # HTTP Server dependencies
+  shelf: ^1.4.1
+  shelf_router: ^1.1.4
+  shelf_cors_headers: ^0.1.5
+  
+  # HTTP Client for testing
+  http: ^1.1.0
+  
+  # Logging
+  logger: ^2.0.2
 
 dev_dependencies:
   flutter_test:

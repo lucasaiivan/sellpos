@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/printer_provider.dart';
+import '../providers/http_server_provider.dart';
 import '../widgets/printer_selection_dialog.dart';
+import '../widgets/http_server_config_dialog.dart';
 
 /// Página principal con UI minimalista para mostrar el estado de la impresora
 class MainPage extends StatefulWidget {
@@ -36,10 +38,30 @@ class _MainPageState extends State<MainPage> {
         Consumer<PrinterProvider>(
           builder: (context, provider, child) {
             return Padding(
-              padding: const EdgeInsets.only(right: 16,top: 8),
+              padding: const EdgeInsets.only(right: 8, top: 8),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Botón de configuración del servidor HTTP
+                  Consumer<HttpServerProvider>(
+                    builder: (context, httpProvider, child) {
+                      return IconButton(
+                        onPressed: () => _showHttpServerConfigDialog(context),
+                        icon: Icon(
+                          httpProvider.isServerRunning 
+                              ? Icons.cloud_done 
+                              : Icons.cloud_off,
+                          color: httpProvider.isServerRunning
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.outline,
+                        ),
+                        tooltip: httpProvider.isServerRunning
+                            ? 'Servidor HTTP activo - Configurar'
+                            : 'Servidor HTTP inactivo - Configurar',
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 8),
                   // Botón de refresh con mejores estados visuales y animación
                   AnimatedRotation(
                     turns: provider.isScanning ? 1.0 : 0.0,
@@ -113,7 +135,7 @@ class _MainPageState extends State<MainPage> {
                     ),
                   ),
                     
-                ]
+                ],
               ),
             );
           },
@@ -301,6 +323,13 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showHttpServerConfigDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => const HttpServerConfigDialog(),
     );
   }
 

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'data/repositories/printer_repository_impl.dart';
 import 'domain/usecases/printer_usecase.dart';
 import 'presentation/providers/printer_provider.dart';
+import 'presentation/providers/http_server_provider.dart';
 import 'presentation/pages/main_page.dart';
 
 void main() {
@@ -28,6 +29,17 @@ class MyApp extends StatelessWidget {
           create: (context) => PrinterProvider(
             context.read<PrinterUseCase>(),
           ),
+        ),
+        ChangeNotifierProxyProvider<PrinterProvider, HttpServerProvider>(
+          create: (_) => HttpServerProvider(),
+          update: (context, printerProvider, httpServerProvider) {
+            httpServerProvider ??= HttpServerProvider();
+            httpServerProvider.configurePrinterProvider(printerProvider);
+            if (!httpServerProvider.isInitialized) {
+              httpServerProvider.initialize();
+            }
+            return httpServerProvider;
+          },
         ),
       ],
       child: MaterialApp(
