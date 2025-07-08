@@ -724,7 +724,9 @@ class PrinterRepositoryImpl implements PrinterRepository {
       
       List<int> bytes = [];
       
-      // Encabezado del negocio
+      // ================================
+      // ENCABEZADO PRINCIPAL
+      // ================================
       bytes += generator.text(
         '================================',
         styles: const PosStyles(align: PosAlign.center),
@@ -736,111 +738,12 @@ class PrinterRepositoryImpl implements PrinterRepository {
           align: PosAlign.center,
           bold: true,
           height: PosTextSize.size2,
-          width: PosTextSize.size1,
+          width: PosTextSize.size2,
         ),
       );
       
       bytes += generator.text(
-        '================================',
-        styles: const PosStyles(align: PosAlign.center),
-      );
-      
-      bytes += generator.text('');
-      
-      // Fecha y hora
-      final now = DateTime.now();
-      bytes += generator.row([
-        PosColumn(text: 'FECHA:', width: 4, styles: const PosStyles(bold: true)),
-        PosColumn(text: '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}', width: 8, styles: const PosStyles(align: PosAlign.right)),
-      ]);
-      
-      bytes += generator.row([
-        PosColumn(text: 'HORA:', width: 4, styles: const PosStyles(bold: true)),
-        PosColumn(text: '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}', width: 8, styles: const PosStyles(align: PosAlign.right)),
-      ]);
-      
-      // Cliente (si se proporciona)
-      if (customerName != null && customerName.isNotEmpty) {
-        bytes += generator.row([
-          PosColumn(text: 'CLIENTE:', width: 4, styles: const PosStyles(bold: true)),
-          PosColumn(text: customerName, width: 8, styles: const PosStyles(align: PosAlign.right)),
-        ]);
-      }
-      
-      bytes += generator.text(
-        '--------------------------------',
-        styles: const PosStyles(align: PosAlign.center),
-      );
-      
-      // Encabezado de productos
-      bytes += generator.row([
-        PosColumn(text: 'CANT', width: 2, styles: const PosStyles(bold: true)),
-        PosColumn(text: 'DESCRIPCION', width: 6, styles: const PosStyles(bold: true)),
-        PosColumn(text: 'PRECIO', width: 4, styles: const PosStyles(bold: true, align: PosAlign.right)),
-      ]);
-      
-      bytes += generator.text(
-        '--------------------------------',
-        styles: const PosStyles(align: PosAlign.center),
-      );
-      
-      // Lista de productos
-      for (final product in products) {
-        final quantity = product['quantity']?.toString() ?? '1';
-        final description = product['description']?.toString() ?? 'Producto';
-        final price = (product['price'] as num?)?.toDouble() ?? 0.0;
-        
-        bytes += generator.row([
-          PosColumn(text: quantity, width: 2),
-          PosColumn(text: description, width: 6),
-          PosColumn(text: '\$${price.toStringAsFixed(2)}', width: 4, styles: const PosStyles(align: PosAlign.right)),
-        ]);
-      }
-      
-      bytes += generator.text(
-        '--------------------------------',
-        styles: const PosStyles(align: PosAlign.center),
-      );
-      
-      // Total
-      bytes += generator.row([
-        PosColumn(text: '', width: 8),
-        PosColumn(text: 'TOTAL:', width: 2, styles: const PosStyles(bold: true)),
-        PosColumn(text: '\$${total.toStringAsFixed(2)}', width: 2, styles: const PosStyles(bold: true, align: PosAlign.right)),
-      ]);
-      
-      bytes += generator.text('');
-      
-      // Método de pago
-      bytes += generator.text(
-        'Metodo de pago: $paymentMethod',
-        styles: const PosStyles(align: PosAlign.left),
-      );
-      
-      // Efectivo recibido y cambio (si aplica)
-      if (cashReceived != null && cashReceived > 0) {
-        bytes += generator.text(
-          'Efectivo recibido: \$${cashReceived.toStringAsFixed(2)}',
-          styles: const PosStyles(align: PosAlign.left),
-        );
-        
-        if (change != null && change > 0) {
-          bytes += generator.text(
-            'Cambio: \$${change.toStringAsFixed(2)}',
-            styles: const PosStyles(
-              align: PosAlign.left,
-              bold: true,
-            ),
-          );
-        }
-      }
-      
-      bytes += generator.text('');
-      bytes += generator.text('');
-      
-      // Pie de página
-      bytes += generator.text(
-        '¡Gracias por su compra!',
+        'TICKET DE VENTA',
         styles: const PosStyles(
           align: PosAlign.center,
           bold: true,
@@ -848,8 +751,308 @@ class PrinterRepositoryImpl implements PrinterRepository {
       );
       
       bytes += generator.text(
-        'Vuelva pronto',
+        '================================',
         styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.text('');
+      
+      // ================================
+      // INFORMACIÓN DE LA TRANSACCIÓN
+      // ================================
+      final now = DateTime.now();
+      final ticketNumber = now.millisecondsSinceEpoch.toString().substring(8);
+      
+      bytes += generator.text(
+        'INFORMACIÓN DE VENTA',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          underline: true,
+        ),
+      );
+      
+      bytes += generator.text(
+        '--------------------------------',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.row([
+        PosColumn(text: 'TICKET #:', width: 4, styles: const PosStyles(bold: true)),
+        PosColumn(text: ticketNumber, width: 8, styles: const PosStyles(align: PosAlign.right)),
+      ]);
+      
+      bytes += generator.row([
+        PosColumn(text: 'FECHA:', width: 4, styles: const PosStyles(bold: true)),
+        PosColumn(text: '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}', width: 8, styles: const PosStyles(align: PosAlign.right)),
+      ]);
+      
+      bytes += generator.row([
+        PosColumn(text: 'HORA:', width: 4, styles: const PosStyles(bold: true)),
+        PosColumn(text: '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}', width: 8, styles: const PosStyles(align: PosAlign.right)),
+      ]);
+      
+      // Información del cliente
+      if (customerName != null && customerName.isNotEmpty) {
+        bytes += generator.row([
+          PosColumn(text: 'CLIENTE:', width: 4, styles: const PosStyles(bold: true)),
+          PosColumn(text: customerName.toUpperCase(), width: 8, styles: const PosStyles(align: PosAlign.right)),
+        ]);
+      } else {
+        bytes += generator.row([
+          PosColumn(text: 'CLIENTE:', width: 4, styles: const PosStyles(bold: true)),
+          PosColumn(text: 'CLIENTE GENERAL', width: 8, styles: const PosStyles(align: PosAlign.right)),
+        ]);
+      }
+      
+      bytes += generator.text(
+        '================================',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.text('');
+      
+      // ================================
+      // DETALLE DE PRODUCTOS
+      // ================================
+      bytes += generator.text(
+        'DETALLE DE PRODUCTOS',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          underline: true,
+        ),
+      );
+      
+      bytes += generator.text(
+        '--------------------------------',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // Encabezado de la tabla de productos
+      bytes += generator.row([
+        PosColumn(text: 'QTY', width: 2, styles: const PosStyles(bold: true)),
+        PosColumn(text: 'DESCRIPCIÓN', width: 6, styles: const PosStyles(bold: true)),
+        PosColumn(text: 'PRECIO', width: 4, styles: const PosStyles(bold: true, align: PosAlign.right)),
+      ]);
+      
+      bytes += generator.text(
+        '- - - - - - - - - - - - - - - - ',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // Lista de productos con cálculos detallados
+      double subtotal = 0.0;
+      for (final product in products) {
+        final quantity = _parseToDouble(product['quantity']) ?? 1.0;
+        final description = product['description']?.toString() ?? 'Producto';
+        final unitPrice = _parseToDouble(product['price']) ?? 0.0;
+        final lineTotal = quantity * unitPrice;
+        subtotal += lineTotal;
+        
+        // Nombre del producto
+        bytes += generator.row([
+          PosColumn(text: quantity.toStringAsFixed(quantity % 1 == 0 ? 0 : 1), width: 2),
+          PosColumn(text: description, width: 6),
+          PosColumn(text: '\$${lineTotal.toStringAsFixed(2)}', width: 4, styles: const PosStyles(align: PosAlign.right)),
+        ]);
+        
+        // Precio unitario si la cantidad es mayor a 1
+        if (quantity > 1) {
+          bytes += generator.row([
+            PosColumn(text: '', width: 2),
+            PosColumn(text: '  @ \$${unitPrice.toStringAsFixed(2)} c/u', width: 10, styles: const PosStyles(
+              align: PosAlign.left,
+              fontType: PosFontType.fontB,
+            )),
+          ]);
+        }
+      }
+      
+      bytes += generator.text(
+        '================================',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // ================================
+      // RESUMEN FINANCIERO
+      // ================================
+      bytes += generator.text(
+        'RESUMEN DE VENTA',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          underline: true,
+        ),
+      );
+      
+      bytes += generator.text(
+        '--------------------------------',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // Cantidad total de artículos
+      final totalItems = products.fold<double>(0, (sum, product) => 
+        sum + (_parseToDouble(product['quantity']) ?? 1.0));
+      
+      bytes += generator.row([
+        PosColumn(text: 'ARTÍCULOS:', width: 6, styles: const PosStyles(bold: true)),
+        PosColumn(text: totalItems.toStringAsFixed(totalItems % 1 == 0 ? 0 : 1), width: 6, styles: const PosStyles(align: PosAlign.right, bold: true)),
+      ]);
+      
+      bytes += generator.row([
+        PosColumn(text: 'SUBTOTAL:', width: 6, styles: const PosStyles(bold: true)),
+        PosColumn(text: '\$${subtotal.toStringAsFixed(2)}', width: 6, styles: const PosStyles(align: PosAlign.right, bold: true)),
+      ]);
+      
+      // Calcular impuestos si es diferente del subtotal
+      final taxes = total - subtotal;
+      if (taxes.abs() > 0.01) {
+        bytes += generator.row([
+          PosColumn(text: 'IMPUESTOS:', width: 6, styles: const PosStyles(bold: true)),
+          PosColumn(text: '\$${taxes.toStringAsFixed(2)}', width: 6, styles: const PosStyles(align: PosAlign.right, bold: true)),
+        ]);
+      }
+      
+      bytes += generator.text(
+        '- - - - - - - - - - - - - - - - ',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // Total final destacado
+      bytes += generator.row([
+        PosColumn(text: 'TOTAL A PAGAR:', width: 6, styles: const PosStyles(
+          bold: true,
+          height: PosTextSize.size2,
+          width: PosTextSize.size1,
+        )),
+        PosColumn(text: '\$${total.toStringAsFixed(2)}', width: 6, styles: const PosStyles(
+          align: PosAlign.right,
+          bold: true,
+          height: PosTextSize.size2,
+          width: PosTextSize.size1,
+        )),
+      ]);
+      
+      bytes += generator.text(
+        '================================',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.text('');
+      
+      // ================================
+      // INFORMACIÓN DE PAGO
+      // ================================
+      bytes += generator.text(
+        'INFORMACIÓN DE PAGO',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          underline: true,
+        ),
+      );
+      
+      bytes += generator.text(
+        '--------------------------------',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.row([
+        PosColumn(text: 'MÉTODO:', width: 4, styles: const PosStyles(bold: true)),
+        PosColumn(text: paymentMethod.toUpperCase(), width: 8, styles: const PosStyles(align: PosAlign.right, bold: true)),
+      ]);
+      
+      // Detalles específicos para pago en efectivo
+      if (cashReceived != null && cashReceived > 0) {
+        bytes += generator.row([
+          PosColumn(text: 'RECIBIDO:', width: 4, styles: const PosStyles(bold: true)),
+          PosColumn(text: '\$${cashReceived.toStringAsFixed(2)}', width: 8, styles: const PosStyles(align: PosAlign.right, bold: true)),
+        ]);
+        
+        if (change != null && change > 0) {
+          bytes += generator.row([
+            PosColumn(text: 'CAMBIO:', width: 4, styles: const PosStyles(bold: true)),
+            PosColumn(text: '\$${change.toStringAsFixed(2)}', width: 8, styles: const PosStyles(
+              align: PosAlign.right,
+              bold: true,
+              height: PosTextSize.size2,
+              width: PosTextSize.size1,
+            )),
+          ]);
+        } else if (change != null && change == 0) {
+          bytes += generator.row([
+            PosColumn(text: 'CAMBIO:', width: 4, styles: const PosStyles(bold: true)),
+            PosColumn(text: 'EXACTO', width: 8, styles: const PosStyles(align: PosAlign.right, bold: true)),
+          ]);
+        }
+      }
+      
+      bytes += generator.text(
+        '================================',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.text('');
+      bytes += generator.text('');
+      
+      // ================================
+      // PIE DE PÁGINA
+      // ================================
+      bytes += generator.text(
+        '¡GRACIAS POR SU COMPRA!',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          height: PosTextSize.size2,
+          width: PosTextSize.size1,
+        ),
+      );
+      
+      bytes += generator.text('');
+      
+      bytes += generator.text(
+        'Su satisfacción es nuestra',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.text(
+        'prioridad. Vuelva pronto.',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      bytes += generator.text('');
+      
+      bytes += generator.text(
+        'Conserve este ticket para',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          fontType: PosFontType.fontB,
+        ),
+      );
+      
+      bytes += generator.text(
+        'cualquier aclaración.',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          fontType: PosFontType.fontB,
+        ),
+      );
+      
+      bytes += generator.text('');
+      
+      bytes += generator.text(
+        '================================',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      
+      // Información del sistema
+      bytes += generator.text(
+        'Powered by SellPOS v1.0',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          fontType: PosFontType.fontB,
+        ),
       );
       
       bytes += generator.text(
@@ -857,8 +1060,10 @@ class PrinterRepositoryImpl implements PrinterRepository {
         styles: const PosStyles(align: PosAlign.center),
       );
       
-      // Corte final
-      bytes += generator.feed(3);
+      // Espacio final y corte
+      bytes += generator.text('');
+      bytes += generator.text('');
+      bytes += generator.feed(2);
       bytes += generator.cut();
       
       return bytes;
@@ -866,6 +1071,25 @@ class PrinterRepositoryImpl implements PrinterRepository {
       debugPrint('Error generando ticket personalizado: $e');
       throw Exception('Error al generar ticket personalizado: $e');
     }
+  }
+
+  /// Convierte de manera segura un valor a double, manejando tanto números como strings
+  double? _parseToDouble(dynamic value) {
+    if (value == null) return null;
+    
+    if (value is num) {
+      return value.toDouble();
+    }
+    
+    if (value is String) {
+      try {
+        return double.tryParse(value);
+      } catch (e) {
+        return null;
+      }
+    }
+    
+    return null;
   }
 
   void dispose() {
